@@ -54,23 +54,24 @@ const mockApi = {
   }
 };
 
-// Function to simulate a call to the Gemini API
+// Function to call the secure serverless function to get a Gemini prompt.
 const generatePromptWithGemini = async (clientName, task) => {
-  // Simulate API call with a delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  try {
+    const response = await fetch('/api/generate-prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientName, task })
+    });
 
-  // In a real implementation, you would use this logic:
-  // const apiKey = 'YOUR_API_KEY_HERE'; // Use Vercel environment variables for this
-  // const prompt = `Act as a marketing consultant's assistant. A client named '${clientName}' has just completed a task: '${task}'. Generate a 'gentle upgrade prompt' to encourage her to buy a premium service. The prompt should be friendly, professional, and focus on helping her achieve her goals faster.`;
-  // const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-  // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-  // const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  // const result = await response.json();
-  // const generatedMessage = result.candidates[0].content.parts[0].text;
-
-  // For this demo, we return a mock generated message.
-  const mockResponse = `Hey ${clientName}, great job on finishing the "${task}"! That's awesome. Now that you have a solid plan, a premium content creation package could help you execute it faster. Are you interested in a quick chat about how we can get that done for you?`;
-  return mockResponse;
+    if (!response.ok) {
+      throw new Error('Failed to get a response from the API.');
+    }
+    const data = await response.json();
+    return data.generatedMessage;
+  } catch (error) {
+    console.error('Error calling the serverless function:', error);
+    return `Error: Could not generate a prompt for ${clientName}.`;
+  }
 };
 
 // --- VANILLA JS COMPONENTS ---
